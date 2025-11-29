@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import http from 'http';//http for socket.io
 import {connectDb}  from './lib/db.js';
+import userRouter from './routes/userRoutes.js';
 
 const app = express();
 const server = http.createServer(app);//create server using http
@@ -13,7 +14,8 @@ app.use('/api/status', (req, res) => {
   res.send({status: 'Server is running'});
 });
 
-
+app.use('/api/auth',userRouter);
+app.use("/api/messages",messageRouter);
 
 
 //connect to mongoDB
