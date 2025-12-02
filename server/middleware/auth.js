@@ -1,20 +1,22 @@
 //middleware to protect route
 import jwt from 'jsonwebtoken';
-import User from '../models/userModel.js';
-export const protectRoute=async(req,res,next)=>{
-    try{
-const token=req.headers.token;
-const decoded=jwt.verify(token,process.env.JWT_SECRET);
-const user=await User.findById(decoded.userId).select("-password");
-    
-    if(!user){
-        return res.json({success:false,message:"User not found"});
+import User from '../models/user.js';
+export const protectRoute=async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ success: false, message: "jwt must be provided" });
     }
-    req.user=user;
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Attach user to request
+    req.user = await User.findById(decoded.id).select("-password");
     next();
-}
-catch(error){
-    res.json({success:false,message:error.message});
-    console.log(error.message);
-}           
-}
+  } catch (error) {
+    console.error(error.message);
+    res.status(401).json({ success: false, message: "jwt must be provided" });
+  }
+};
